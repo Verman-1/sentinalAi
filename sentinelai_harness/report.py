@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 
 
 def write_json(findings: list[dict], path: str) -> None:
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(findings, f, indent=2)
 
 
@@ -50,5 +50,5 @@ def to_markdown(findings: list[dict], model_label: str) -> str:
 
 
 def write_markdown(findings: list[dict], model_label: str, path: str) -> None:
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write(to_markdown(findings, model_label))
