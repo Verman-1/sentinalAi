@@ -1,0 +1,6 @@
+requests>=2.31
+pytest>=8.0
+
+# Optional - only needed for the HuggingFace adapter:
+# transformers>=4.40
+# torch>=2.2
