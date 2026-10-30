@@ -56,6 +56,11 @@ class MockAdapter(ModelAdapter):
         # reset_session() - that gap is the vulnerability under test.
         self._backend_memory: dict[str, str] = {}
 
+    def hard_reset(self) -> None:
+        """Full wipe between independent test episodes (clears the backend too)."""
+        self.history = []
+        self._backend_memory.clear()
+
     def _call(self, messages: list[ChatMessage]) -> str:
         last_user = messages[-1].content
 

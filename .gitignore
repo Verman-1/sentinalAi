@@ -3,6 +3,6 @@ __pycache__/
 .pytest_cache/
 venv/
 .venv/
-report.json
-report.md
+/report.json
+/report.md
 .DS_Store
