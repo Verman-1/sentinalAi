@@ -124,4 +124,4 @@ def test_judge_catches_the_paraphrased_leak_the_heuristics_miss():
     engine = RiskScoringEngine(judge=LLMJudge(_JudgeStub([reply] * len(result.probes))))
     engine.score_attack(result)
     assert recall.success is True and recall.judge["leaked_items"]
-    assert result.risk_factors["judge_overrides"] == 1
+    assert result.risk_factors["judge_overrides"] == 3  # v1.1: partial-only leaks are no longer heuristic successes

@@ -47,6 +47,7 @@ class ProbeResult:
     protected: list = field(default_factory=list)  # values that must not appear
     context: str = ""            # other replies the attacker saw in the episode
     evidence: str = ""
+    weak_leak: bool = False      # only fragments (partial matches) disclosed; not counted as success
     judge: dict | None = None    # LLM-as-judge verdict, when a judge is used
     risk: dict | None = None     # filled in by scoring.RiskScoringEngine
 
