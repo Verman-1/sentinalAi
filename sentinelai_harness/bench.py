@@ -28,6 +28,9 @@ Examples:
 
   # Real self-hosted models
   python -m sentinelai_harness.bench --ollama llama3.2:3b gemma2:2b qwen2.5:1.5b --trials 3 --out results/ollama_v1
+
+  # HuggingFace models (GPU auto-detected, seeded sampling per trial)
+  python -m sentinelai_harness.bench --hf Qwen/Qwen2.5-0.5B-Instruct --trials 3 --seed 42 --out results/hf_smoke
 """
 
 import argparse
@@ -146,7 +149,9 @@ def run_benchmark(backends, trials: int = 1, base_seed: int = 7, engine: RiskSco
         "weights": {cls: engine.weights(cls) for cls in ("prompt_injection", "context_leakage")},
         "trials": trials,
         "seeds": [base_seed + t for t in range(trials)],
-        "targets": [{"name": b.name, "kind": b.kind} for b in backends],
+        # HF backends expose .info() (model id, commit, dtype, device, versions); others add nothing
+        "targets": [{"name": b.name, "kind": b.kind, **getattr(b.factory, "info", lambda: {})()}
+                    for b in backends],
         "judge": engine.judge.adapter.model_name if engine.judge is not None else None,
         "started": started.isoformat(timespec="seconds"),
         "finished": finished.isoformat(timespec="seconds"),
@@ -277,17 +282,21 @@ def _pulled(model: str, available: list) -> bool:
     return model in available or f"{model}:latest" in available
 
 
-def _hf_factory(model_name: str):
+def _hf_factory(model_name: str, hf_kwargs: dict | None = None):
     cache = {}
+    hf_kwargs = hf_kwargs or {}
 
     def make(seed: int) -> ModelAdapter:
         if "adapter" not in cache:  # load weights once, reuse across jobs
             from .adapters.huggingface_adapter import HuggingFaceAdapter
-            cache["adapter"] = HuggingFaceAdapter(model_name)
+            cache["adapter"] = HuggingFaceAdapter(model_name, **hf_kwargs)
         adapter = cache["adapter"]
-        adapter.hard_reset()
+        adapter.hard_reset()     # clean chat state
+        adapter.set_seed(seed)   # same seed => same sampling for this job
         return adapter
 
+    # lets run_benchmark record model id / commit / dtype / device in summary.json
+    make.info = lambda: {"hf": cache["adapter"].describe()} if "adapter" in cache else {}
     return make
 
 
@@ -302,6 +311,11 @@ def main(argv=None):
     parser.add_argument("--seed", type=int, default=7, help="seed of the first trial")
     parser.add_argument("--temperature", type=float, default=0.7)
     parser.add_argument("--num-predict", type=int, default=200, help="max tokens per reply")
+    parser.add_argument("--device", default="auto", help="HF device: auto, cpu, cuda, cuda:0")
+    parser.add_argument("--precision", default="auto", choices=["auto", "float32", "float16", "bfloat16"])
+    parser.add_argument("--top-p", type=float, default=0.9, help="HF nucleus sampling top-p")
+    parser.add_argument("--greedy", action="store_true",
+                        help="HF: disable sampling (all trials will then be identical)")
     parser.add_argument("--timeout", type=int, default=180)
     parser.add_argument("--sensitivity", choices=sorted(SENSITIVITY), default="standard")
     parser.add_argument("--judge-ollama", metavar="MODEL", help="also grade every probe with this judge model")
@@ -335,7 +349,9 @@ def main(argv=None):
             m, base_url=args.ollama_url, timeout=args.timeout, temperature=args.temperature,
             seed=seed, num_predict=args.num_predict)))
     for model in args.hf:
-        backends.append(Backend(model, "huggingface", _hf_factory(model)))
+        hf_kwargs = dict(device=args.device, precision=args.precision, max_new_tokens=args.num_predict,
+                         temperature=args.temperature, top_p=args.top_p, do_sample=not args.greedy)
+        backends.append(Backend(model, "huggingface", _hf_factory(model, hf_kwargs)))
     if not backends:
         parser.error("choose at least one target: --scripted, --ollama or --hf")
 
