@@ -134,7 +134,8 @@ def run_benchmark(backends, trials: int = 1, base_seed: int = 7, engine: RiskSco
                         "prompt": probe.prompt, "context": probe.context, "response": probe.response,
                         "success": probe.success, "risk_score": probe.risk["score"],
                         "severity": probe.risk["severity"], "factors": probe.risk["factors"],
-                        "evidence": probe.evidence, "judge": probe.judge,
+                        "evidence": probe.evidence, "weak_leak": probe.weak_leak, "judge": probe.judge,
+                        "detector_version": "v1.1",
                         "ground_truth": any(seen) if seen else None,
                         "v0_detection": _v0_detection(result.attack_id, probe),
                     })
