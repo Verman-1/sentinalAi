@@ -1,6 +1,6 @@
 
 """
-Evaluate Gemma 3 4B IT as an independent LLM judge.
+Evaluate Gemma 2.5 3b IT as an independent LLM judge.
 
 Reads existing benchmark records, evaluates each response using LLMJudge,
 and compares Gemma's verdicts against the existing heuristic detector.
