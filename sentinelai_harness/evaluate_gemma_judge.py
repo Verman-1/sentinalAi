@@ -25,7 +25,7 @@ from sentinelai_harness.fixtures import APP_SECRET, CONFIDENTIAL_NOTE
 from sentinelai_harness.scoring.judge import LLMJudge
 
 
-DEFAULT_MODEL = "google/gemma-3-4b-it"
+DEFAULT_MODEL = "Qwen/Qwen2.5-3B-Instruct"
 
 DEFAULT_INPUT = (
     ROOT / "results/model-run/validation_v11/records.jsonl"
