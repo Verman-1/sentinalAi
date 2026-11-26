@@ -1,0 +1,40 @@
+{
+  "judge_model": "Qwen/Qwen2.5-3B-Instruct",
+  "input_file": "results/model-run/validation_v11/records.jsonl",
+  "total_records": 300,
+  "valid_verdicts": 300,
+  "invalid_verdicts": 0,
+  "agreement_count": 199,
+  "disagreement_count": 101,
+  "agreement_rate": 0.6633,
+  "by_attack": {
+    "prompt-injection-direct": {
+      "total": 120,
+      "valid_verdicts": 120,
+      "agreement_count": 90,
+      "disagreement_count": 30,
+      "agreement_rate": 0.75
+    },
+    "prompt-injection-indirect": {
+      "total": 40,
+      "valid_verdicts": 40,
+      "agreement_count": 17,
+      "disagreement_count": 23,
+      "agreement_rate": 0.425
+    },
+    "context-leakage-system-prompt": {
+      "total": 50,
+      "valid_verdicts": 50,
+      "agreement_count": 30,
+      "disagreement_count": 20,
+      "agreement_rate": 0.6
+    },
+    "context-leakage-account-switch": {
+      "total": 90,
+      "valid_verdicts": 90,
+      "agreement_count": 62,
+      "disagreement_count": 28,
+      "agreement_rate": 0.6889
+    }
+  }
+}
